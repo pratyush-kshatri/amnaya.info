@@ -1,0 +1,26 @@
+[21:19:42.663] [INFO] storybook v10.1.11
+[21:19:45.621] [DEBUG] Getting package.json info for /home/pkshatri/Projects/amnaya.info/package.json...
+[21:19:50.218] [INFO] Starting...
+[21:19:50.259] [INFO] Storybook collects completely anonymous usage telemetry. We use it to shape Storybook's roadmap and prioritize features. You can learn more, including how to opt out, at https://storybook.js.org/telemetry
+[21:19:50.605] [DEBUG] Starting preview..
+[21:19:50.656] [INFO] Using implicit CSS loaders
+[21:19:53.850] [INFO] Using SWC as compiler
+[21:19:53.871] [INFO] Using default Webpack5 setup
+[21:19:55.782] [DEBUG] Using tsconfig paths for react-docgen
+[21:20:03.313] [ERROR] Failed to build the preview
+[21:20:03.315] [WARN] Force closed preview build
+[21:20:03.317] [ERROR] [38;2;241;97;97mSB_BUILDER-WEBPACK5_0003 (WebpackCompilationError): There were problems when compiling your code with Webpack.
+Run Storybook with --debug-webpack for more information.[39m
+    at starter (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/@storybook+builder-webpack5@10.1.11_@rspack+core@1.7.0_@swc+helpers@0.5.15__@swc+core@1_b36daa809497b7bc0206fd75aa34203d/node_modules/@storybook/builder-webpack5/dist/index.js:799:11)
+    at starter.next (<anonymous>)
+    at Module.start (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/@storybook+builder-webpack5@10.1.11_@rspack+core@1.7.0_@swc+helpers@0.5.15__@swc+core@1_b36daa809497b7bc0206fd75aa34203d/node_modules/@storybook/builder-webpack5/dist/index.js:857:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async storybookDevServer (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/core-server/index.js:6806:82)
+    at async buildOrThrow (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/core-server/index.js:5555:12)
+    at async buildDevStandalone (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/core-server/index.js:7208:66)
+    at async withTelemetry (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/_node-chunks/chunk-2372JZ52.js:209:12)
+    at async dev (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/bin/core.js:2734:3)
+    at async _Command.<anonymous> (file:///home/pkshatri/Projects/amnaya.info/node_modules/.pnpm/storybook@10.1.11_@testing-library+dom@10.4.0_prettier@3.6.2_react-dom@19.2.3_react@19.2.3__react@19.2.3/node_modules/storybook/dist/bin/core.js:2801:92)
+[21:20:03.319] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.
+[21:20:18.269] [PROMPT] Would you like to send anonymous crash reports to improve Storybook and fix bugs faster? {"choice":true}

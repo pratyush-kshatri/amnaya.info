@@ -3,6 +3,9 @@
     Safe - Multiple Calls
 */
 import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+import { SplitText } from 'gsap/SplitText';
 
 let registered = false;
 
@@ -12,11 +15,14 @@ async function registerGsapPlugins() {
     try {
         const w = window as any;
 
+        if (w.Flip) gsap.registerPlugin(w.Flip);
+        else gsap.registerPlugin(Flip);
+
         if (w.MorphSVGPlugin) gsap.registerPlugin(w.MorphSVGPlugin);
-        else {
-            const { MorphSVGPlugin } = await import('gsap/MorphSVGPlugin');
-            gsap.registerPlugin(MorphSVGPlugin);
-        }
+        else gsap.registerPlugin(MorphSVGPlugin);
+
+        if (w.SplitText) gsap.registerPlugin(w.SplitText);
+        else gsap.registerPlugin(SplitText);
 
         registered = true;
     } catch (e) {

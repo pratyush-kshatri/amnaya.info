@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { Button } from './button';
 
 const meta: Meta<typeof Button> = {
-  title: 'UI Kit/Components/Button',
+  title: 'Components/Button',
   component: Button,
   parameters: {
     layout: 'centered',
@@ -10,7 +10,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'accent'],
+      options: ['primary', 'secondary', 'accent', 'ghost'],
     },
     disabled: {
       control: 'boolean',

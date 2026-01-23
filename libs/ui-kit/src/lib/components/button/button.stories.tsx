@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
 import { Button } from './button';
+import { FlaskConical } from 'lucide-react';
 
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',
@@ -18,11 +19,15 @@ const meta: Meta<typeof Button> = {
     children: {
       control: 'text',
     },
+    icon: {
+      control: 'boolean'
+    }
   },
   args: {
     variant: 'primary',
     disabled: false,
     children: 'Click Me',
+    icon: <FlaskConical className='w-5 h-5' />
   },
 };
 

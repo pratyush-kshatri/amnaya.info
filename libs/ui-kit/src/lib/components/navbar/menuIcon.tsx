@@ -102,7 +102,7 @@ const MenuIcon = React.forwardRef<SVGSVGElement, MenuIconProps>(
                 strokeLinecap='round'
                 strokeLinejoin='round'
                 vectorEffect='non-scaling-stroke'
-                className={ cn('transform-gpu will-change-transform subpixel-antialiased', className) }
+                className={ cn('transform-gpu will-change-transform', className) }
             >
                 {
                     MENU_SHAPES.MENU.map((d, i) => (

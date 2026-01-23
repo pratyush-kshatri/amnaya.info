@@ -25,11 +25,11 @@ const navbarClasses = cva(
     [
         'fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between',
         'max-w-5xl p-2 rounded-md bg-surface border border-accent',
-        'transform-gpu will-change-[width,transform] backface-hidden'
+        'transform-gpu will-change-width,transform backface-hidden'
     ]
 );
 
-interface NavbarProps {
+interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
     onMenuToggle?: (isOpen: boolean) => void;
     isAuthenticated: boolean;
     navLinks: SidePanelGroupInterface[];

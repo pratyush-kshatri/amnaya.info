@@ -23,9 +23,9 @@ import { Button } from "../button/button";
 // Tailwind
 const sidePanelClasses = cva(
     [
-        'fixed z-40 flex flex-col gap-2 p-2',
-        'bg-surface rounded-md border border-accent',
-        'transform-gpu backface-hidden perspective-1000 will-change-[clip-path,transform,opacity]'
+        'fixed z-50 flex flex-col gap-2 p-2',
+        'bg-surface rounded-md border border-accent outline-none',
+        'transform-gpu backface-hidden perspective-1000 will-change-clip-path,transform,opacity'
     ]
 );
 
@@ -92,11 +92,10 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
             registerGsapPlugins();
 
             const handleResize = () => {
-                const navbarRect = navbar.getBoundingClientRect();
-                const width = isMobile ? navbarRect.width : 320;
-
                 // Get Current State
                 const state = Flip.getState(sidePanel);
+                const navbarRect = navbar.getBoundingClientRect();
+                const width = isMobile ? navbarRect.width : 320;
 
                 // Update Position
                 gsap.set(sidePanel, {
@@ -109,16 +108,13 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 // Animate New Position
                 Flip.from(state, {
                     duration: 0.3,
-                    ease: 'power3.out',
+                    ease: 'power3.inOut',
                     simple: true
                 });
             };
 
             const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
             observer.observe(navbar);
-
-            // Initial State
-            handleResize();
 
             return () => observer.disconnect();
         }, { scope: sidePanelRef, dependencies: [isMobile, navbarRef] });
@@ -157,7 +153,7 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 opacity: 1,
                 visibility: 'visible',
                 duration: 0.6,
-                ease: 'expo.inOut'
+                ease: 'expo.out'
             });
 
             // Rows Animation
@@ -177,7 +173,7 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
 
                 // Icon Animation
                 tl.from(icon, {
-                    x: -12,
+                    x: 12,
                     opacity: 0,
                     duration: 0.6
                 }, startTime);
@@ -274,15 +270,18 @@ const SidePanelItem = ({
             onClick={ onClose }
             className={ cn(sidePanelItemClasses({ active })) }
         >
-            <Link href={ href }>
+            <Link
+                href={ href }
+                className='flex w-full items-center justify-between'
+            >
+                <span className='side-panel-label'>
+                    { label }
+                </span>
                 <Icon
                     size={ 18 }
                     strokeWidth={ active ? 2.5 : 2 }
                     className='side-panel-icon transform-gpu'
                 />
-                <span className='side-panel-label'>
-                    { label }
-                </span>
             </Link>
         </Button>
     );

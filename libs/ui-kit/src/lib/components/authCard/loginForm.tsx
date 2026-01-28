@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Chrome, Eye, EyeOff, Github, KeyRound, LogIn, UserPlus, UserRound } from 'lucide-react';
+import { Chrome, Eye, EyeOff, Github, Key, LogIn, UserPlus, UserRound } from 'lucide-react';
 
 import { SharedAuthCardProps, styles } from "./authCard";
 
@@ -30,7 +30,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             >
                 {/* Username */}
                 <div className='flex flex-row items-center gap-x-2'>
-                    <UserRound className={ styles.icon } strokeWidth={ 2.5 } />
+                    <UserRound className={ styles.icon } />
                     <input
                         className={ styles.input }
                         name='emailOrUsername'
@@ -46,7 +46,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
                 {/* Password */}
                 <div className='flex flex-row items-center gap-x-2'>
-                    <KeyRound className={ styles.icon } strokeWidth={ 2.5 } />
+                    <Key className={ styles.icon } />
                     <input
                         className={ styles.input }
                         name='password'

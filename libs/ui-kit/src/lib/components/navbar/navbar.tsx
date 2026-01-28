@@ -23,7 +23,7 @@ import { SidePanel, SidePanelGroupInterface } from "./sidePanel";
 // Tailwind
 const navbarClasses = cva(
     [
-        'fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between',
+        'fixed top-2 z-50 flex items-center justify-between',
         'max-w-5xl p-2 rounded-md bg-surface border border-accent',
         'transform-gpu will-change-width,transform backface-hidden'
     ]
@@ -52,13 +52,12 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
             const navbar = navbarRef.current;
             if (!navbar) return;
 
-            // Flip Plugin Registration
-            registerGsapPlugins();
-
             // Current State
             const state = Flip.getState(navbar);
 
             gsap.set(navbar, {
+                left: '50%',
+                xPercent: -50,
                 width: isMobile ? '90%' : '95%'
             });
 

@@ -5,11 +5,11 @@ import { cva, VariantProps } from 'class-variance-authority';
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { Loader } from 'lucide-react';
 
 import { mergeRefs } from '../../utils/mergeRefs';
 
 import { cn } from '../../utils/cn';
-import { Loader } from 'lucide-react';
 
 // Tailwind
 const buttonVariants = cva(
@@ -18,7 +18,7 @@ const buttonVariants = cva(
     'rounded-md font-medium px-4 py-2 bg-surface border overflow-hidden',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'disabled:pointer-events-none',
-    'transform-gpu backface-hidden will-change-transform',
+    'transform-gpu backface-hidden',
   ],
   {
     variants: {
@@ -35,7 +35,6 @@ const buttonVariants = cva(
   }
 );
 
-// Polymorphism
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;

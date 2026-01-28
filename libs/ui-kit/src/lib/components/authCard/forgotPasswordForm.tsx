@@ -22,8 +22,8 @@ const ForgotPasswordForm: React.FC<SharedAuthCardProps> = ({
             <span className={ styles.label + ' text-center' }>
                 Enter your Username/Email, we will verify our record and send you a link to reset your password
             </span>
-            <div className='flex flex-row items-center'>
-                <Mail className={ styles.icon } strokeWidth={ 2.5 } />
+            <div className='flex flex-row items-center gap-x-2'>
+                <Mail className={ styles.icon } />
                 <input
                     className={ styles.input }
                     name='emailOrUsername'
@@ -35,7 +35,7 @@ const ForgotPasswordForm: React.FC<SharedAuthCardProps> = ({
                 />
             </div>
 
-            <div className='form-button flex flex-row justify-between'>
+            <div className='form-button flex flex-row justify-between gap-x-2'>
                 <Button
                     variant='primary'
                     loading={ isLoading }

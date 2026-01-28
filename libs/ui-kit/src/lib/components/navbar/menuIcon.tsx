@@ -4,11 +4,7 @@ import React, { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-import { registerGsapPlugins } from "../../utils/registerGsapPlugins";
-
 import { mergeRefs } from "../../utils/mergeRefs";
-
-import { cn } from "../../utils/cn";
 
 const MENU_SHAPES = {
     MENU: [
@@ -47,16 +43,14 @@ const MenuIcon = React.forwardRef<SVGSVGElement, MenuIconProps>(
 
             if (!icon || !iconPath) return;
 
-            // MorphSVG Plugin Registration
-            registerGsapPlugins();
-
             tlRef.current?.kill();
             const tl = gsap.timeline({
                 paused: true,
                 defaults: {
                     transformOrigin: '50% 50%',
-                    duration: 0.6,
-                    ease: 'expo.inOut'
+                    duration: 0.3,
+                    ease: 'expo.out',
+                    force3D: true
                 }
             });
 
@@ -102,7 +96,7 @@ const MenuIcon = React.forwardRef<SVGSVGElement, MenuIconProps>(
                 strokeLinecap='round'
                 strokeLinejoin='round'
                 vectorEffect='non-scaling-stroke'
-                className={ cn('transform-gpu will-change-transform', className) }
+                className={ 'transform-gpu ' + className }
             >
                 {
                     MENU_SHAPES.MENU.map((d, i) => (
@@ -110,7 +104,7 @@ const MenuIcon = React.forwardRef<SVGSVGElement, MenuIconProps>(
                             key={i}
                             d={d}
                             ref={ (e) => { iconPathRef.current[i] = e } }
-                            className='transform-gpu will-change-d'
+                            className='transform-gpu'
                         />
                     ))
                 }

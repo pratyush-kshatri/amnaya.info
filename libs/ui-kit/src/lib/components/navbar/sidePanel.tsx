@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useRef } from "react";
+import * as Dialog from '@radix-ui/react-dialog';
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Flip } from "gsap/Flip";
@@ -10,29 +11,22 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
 
-import { mergeRefs } from "../../utils/mergeRefs";
-
 import { useRafMediaQuery } from "../../utils/useRafMediaQuery";
-
-import { registerGsapPlugins } from "../../utils/registerGsapPlugins";
 
 import { cn } from "../../utils/cn";
 
 import { Button } from "../button/button";
+import { AuthCard } from "../authCard/authCard";
 
 // Tailwind
-const sidePanelClasses = cva(
-    [
-        'fixed z-50 flex flex-col gap-2 p-2',
-        'bg-surface rounded-md border border-accent outline-none',
-        'transform-gpu backface-hidden perspective-1000 will-change-clip-path,transform,opacity'
-    ]
-);
+const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu';
+const panelClasses = 'absolute z-50 flex flex-col gap-2 p-2 w-full bg-surface rounded-md border border-accent outline-none transform-gpu backface-hidden';
 
 const sidePanelItemClasses = cva(
     [
-        'side-panel-item group flex w-full',
-        'transition-colors duration-150 ease-in-out'
+        'side-panel-item group relative flex w-full',
+        'transition-colors duration-150 ease-in-out',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent focus-visible:ring-offset-surface'
     ], {
         variants: {
             active: {
@@ -64,7 +58,7 @@ interface SidePanelProps {
     isAuthenticated: boolean;
     navbarRef: React.RefObject<HTMLElement | null>;
     navLinks: SidePanelGroupInterface[];
-    onClose?: () => void;
+    onClose: () => void;
 };
 
 const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
@@ -75,34 +69,32 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
         navLinks,
         onClose
     }, ref) => {
-        const sidePanelRef = useRef<HTMLDivElement>(null);
-        const tlRef = useRef<gsap.core.Timeline>(null);
-        const pathname = usePathname();
+        const overlayRef = useRef<HTMLDivElement>(null);
+        const panelRef = useRef<HTMLDivElement>(null);
+        const contentRef = useRef<HTMLDivElement>(null);
 
-        const mergedRef = mergeRefs([sidePanelRef, ref]);
+        const tlRef = useRef<gsap.core.Timeline>(null);
+
+        const pathname = usePathname();
+        const { isMobile } = useRafMediaQuery();
 
         // Width Animation
-        const { isMobile } = useRafMediaQuery();
         useGSAP(() => {
-            const sidePanel = sidePanelRef.current;
+            const content = contentRef.current;
             const navbar = navbarRef.current;
-            if (!navbar || !sidePanel) return;
-
-            // Flip Plugin Registration
-            registerGsapPlugins();
+            if (!navbar || !content) return;
 
             const handleResize = () => {
-                // Get Current State
-                const state = Flip.getState(sidePanel);
+                const state = Flip.getState(content);
                 const navbarRect = navbar.getBoundingClientRect();
-                const width = isMobile ? navbarRect.width : 320;
 
                 // Update Position
-                gsap.set(sidePanel, {
+                gsap.set(content, {
                     left: navbarRect.left,
                     top: navbarRect.bottom + 12,
-                    width,
-                    x: 0
+                    width: isMobile ? navbarRect.width : 320,
+                    x: 0,
+                    y: 0
                 });
 
                 // Animate New Position
@@ -113,75 +105,70 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 });
             };
 
+            handleResize();
+
             const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
             observer.observe(navbar);
 
             return () => observer.disconnect();
-        }, { scope: sidePanelRef, dependencies: [isMobile, navbarRef] });
+        }, { scope: contentRef, dependencies: [isOpen, isMobile, navbarRef] });
 
         useGSAP(() => {
-            const sidePanel = sidePanelRef.current;
-            if (!sidePanel) return;
+            const panel = panelRef.current;
+            if (!isOpen || !panel) return;
 
-            // Split Text Plugin Registration
-            registerGsapPlugins();
-
-            // Rows
-            const items = Array.from(sidePanel.querySelectorAll<HTMLElement>('.side-panel-item'));
-            // Titles
-            const titles = Array.from(sidePanel.querySelectorAll<HTMLElement>('.side-panel-title'));
-
-            // Splits
-            const splits: SplitText[] = [];
+            const items = gsap.utils.toArray<HTMLElement>('.side-panel-item');
+            const titles = gsap.utils.toArray<HTMLElement>('.side-panel-title');
 
             const tl = gsap.timeline({
-                paused: true,
-                defaults: { ease: 'expo.out' },
-                onReverseComplete: () => {
-                    gsap.set(sidePanel, { visibility: 'hidden' });
+                defaults: {
+                    ease: 'expo.out',
+                    force3D: true
                 }
             });
-            // Open/Close Animation
-            tl.fromTo(sidePanel, {
-                clipPath: 'inset(0% 0% 100% 0%)',
-                y: -12,
-                opacity: 0,
-                visibility: 'hidden'
-            }, {
-                clipPath: 'inset(0% 0% 0% 0%)',
-                y: 0,
-                opacity: 1,
-                visibility: 'visible',
-                duration: 0.6,
-                ease: 'expo.out'
-            });
 
-            // Rows Animation
+            // Open/Close Animation
+            tl.fromTo(panel, {
+                y: -12,
+                clipPath: 'circle(0% at 50% 0%)',
+                blur: '8px',
+                opacity: 0
+            }, {
+                y: 0,
+                clipPath: 'circle(150% at 50% 0%)',
+                blur: '0px',
+                opacity: 1,
+                duration: 0.6,
+                ease: 'power3.inOut'
+            }, 0)
+            .fromTo(overlayRef.current, {
+                clipPath: 'circle(0% at 50% 0%)',
+                opacity: 0
+            }, {
+                clipPath: 'circle(150% at 50% 0%)',
+                opacity: 1,
+                duration: 0.6,
+                ease: 'power3.inOut'
+            }, 0);            
+
             items.forEach((item, index) => {
-                // Icon
                 const icon = item.querySelector<HTMLElement>('.side-panel-icon');
-                // Label
                 const label = item.querySelector<HTMLElement>('.side-panel-label');
 
-                if (!icon || !label) return;
+                const split = new SplitText(label, { type: 'chars' });
 
-                // Split Label
-                const splitLabel = new SplitText(label, { type: 'chars' });
-                splits.push(splitLabel);
-
-                const startTime = index === 0 ? 0.1 : '<+=0.1';
-
-                // Icon Animation
-                tl.from(icon, {
-                    x: 12,
-                    opacity: 0,
-                    duration: 0.6
-                }, startTime);
-                // Label Animation
-                tl.from(splitLabel.chars, {
+                if (label) tl.from(split.chars, {
                     y: 8,
                     opacity: 0,
+                    rotateX: -90,
                     stagger: 0.02,
+                    duration: 0.4,
+                    onComplete: () => split.revert()
+                }, '>-0.3');
+
+                if (icon) tl.from(icon, {
+                    x: 12,
+                    opacity: 0,
                     duration: 0.3
                 }, '<');
             });
@@ -190,53 +177,62 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
             tl.from(titles, {
                 x: -10,
                 opacity: 0,
-                stagger: 0.2,
                 duration: 0.3
-            }, 0.3);
-
+            }, '>');
 
             tlRef.current = tl;
-            if (isOpen) tl.progress(1);
-
-            return () => {
-                splits.forEach((s) => s.revert());
-                tl.kill();
-                tlRef.current = null;
-            };
-        }, { scope: sidePanelRef, dependencies: [isAuthenticated] });
+        }, { scope: panelRef, dependencies: [isOpen] });
 
         // Toggle
-        useLayoutEffect(() => {
-            if (isOpen) tlRef.current?.play();
-            else tlRef.current?.timeScale(1.5).reverse();
-        }, [isOpen]);
+        const handleClose = () => {
+            if (tlRef.current) tlRef.current.timeScale(1.5).reverse().then(onClose);
+            else onClose();
+        };
 
         const visibleLinks = navLinks.filter((group) => !group.protected || isAuthenticated);
 
         return (
-            <aside
-                ref={ mergedRef }
-                className={ cn(sidePanelClasses()) }
+            <Dialog.Root
+                open={ isOpen }
+                onOpenChange={ (s) => !s && handleClose() }
             >
-                { visibleLinks.map((group, index) => (
-                        <React.Fragment key={ group.title || index }>
-                            <SidePanelGroup title={ group.title }>
-                                { group.items.map((item) => (
-                                        <SidePanelItem
-                                            key={ item.href }
-                                            item={ item }
-                                            active = { pathname === item.href }
-                                            onClose={ onClose }
-                                        />
-                                    )
-                                ) }
-                            </SidePanelGroup>
+                <Dialog.Portal forceMount>
+                    { isOpen && (
+                        <React.Fragment>
+                            <Dialog.Overlay
+                                ref={ overlayRef }
+                                className={ overlayClasses }
+                            />
+                            <Dialog.Content
+                                ref={ contentRef }
+                                className='fixed z-50 outline-none'
+                            >
+                                <aside
+                                    ref={ panelRef }
+                                    className={ panelClasses }
+                                >
+                                    { visibleLinks.map((group, index) => (
+                                        <React.Fragment>
+                                            <SidePanelGroup title={ group.title }>
+                                                { group.items.map((item) => (
+                                                    <SidePanelItem
+                                                        key={ item.href }
+                                                        item={ item }
+                                                        active={ pathname === item.href }
+                                                        onClose={ handleClose }
+                                                    />
+                                                )) }
+                                            </SidePanelGroup>
 
-                            { index < visibleLinks.length - 1 && <Seperator /> }
+                                            { index < visibleLinks.length -1 && <Seperator /> }
+                                        </React.Fragment>
+                                    )) }
+                                </aside>
+                            </Dialog.Content>
                         </React.Fragment>
-                    ))
-                }
-            </aside>
+                    ) }
+                </Dialog.Portal>
+            </Dialog.Root>
         );
     }
 );
@@ -244,7 +240,7 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
 const SidePanelGroup = ({title, children}: {title?: string, children: React.ReactNode }) => (
     <div className='flex flex-col gap-1'>
         { title && (
-            <span className='side-panel-title text-xs font-bold text-accent px-2 mb-1 tracking-wide select-none'>
+            <span className='side-panel-title text-xs font-bold text-accent px-2 ml-2 mb-1 tracking-wide select-none'>
                 { title }
             </span>
         ) }
@@ -272,6 +268,7 @@ const SidePanelItem = ({
         >
             <Link
                 href={ href }
+                aria-current={ active ? 'page' : undefined }
                 className='flex w-full items-center justify-between'
             >
                 <span className='side-panel-label'>

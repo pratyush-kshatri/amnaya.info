@@ -4,12 +4,11 @@ import React, { useCallback, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { SplitText } from 'gsap/SplitText';
 import { Flip } from 'gsap/Flip';
-import { LogIn, UserPlus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { useRafMediaQuery } from '../../utils/useRafMediaQuery';
-
-import { registerGsapPlugins } from '../../utils/registerGsapPlugins';
 
 import { Button } from '../button/button';
 
@@ -18,15 +17,13 @@ import { SignupForm } from './signupForm';
 import { ForgotPasswordForm } from './forgotPasswordForm';
 
 // Tailwind
-const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu will-change-[clip-path,opacity]';
-
-const cardClasses = 'fixed z-50 left-1/2 top-1/2 flex flex-col rounded-md border border-accent text-foreground bg-surface p-4 transform-gpu will-change-[clip-path,tranform,opacity] overflow-hidden outline-none';
-
+const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu';
+const cardClasses = 'fixed z-50 flex flex-col rounded-md border border-accent text-foreground bg-surface p-4 transform-gpu overflow-hidden outline-none';
 // Shared
 const styles = {
-    label: 'px-2 block text-xs font-semibold tracking-tight',
-    input: 'form-input w-full border-0 border-b border-accent rounded-md px-4 py-2 outline-none placeholder:text-accent',
-    icon: 'form-left w-5 h-5 text-accent',
+    label: 'px-2 block text-xs font-semibold tracking-tight cursor-pointer',
+    input: 'form-input w-full border-b border-accent rounded-md px-4 py-2 outline-none placeholder:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent',
+    icon: 'form-left w-5 h-5 text-accent stroke-[2.5]',
     seperator: 'mt-2 mb-2 h-[1px] w-full bg-gradient-to-r from-transparent via-accent to-transparent',
 };
 
@@ -34,19 +31,20 @@ interface SharedAuthCardProps {
     isLoading?: boolean;
     errors?: Record<string, string | undefined>;
     values: Record<string, any>;
+    step?: number;
     onFieldChange: (field: string, value: any) => void;
     onFieldBlur?: (field: string) => void;
     onSubmit: (e: React.FormEvent) => void;
-    switchView: (view: AuthCardView) => void;    
+    switchView: (view: AuthCardView) => void;
+    onStepChange?: (step: number) => void;
 }
-
-type AuthCardView = 'login' | 'signup' | 'forgotPassword';
 
 const viewOrder: Record<AuthCardView, number> = {
     forgotPassword: -1,
     login: 0,
     signup: 1
 };
+type AuthCardView = 'login' | 'signup' | 'forgotPassword';
 
 interface AuthCardProps {
     credentials: Record<string, any>;
@@ -69,108 +67,77 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
         onOAuth
     }, ref) => {
         const buttonRef = useRef<HTMLButtonElement>(null);
-        const cardRef = useRef<HTMLDivElement>(null);
         const overlayRef = useRef<HTMLDivElement>(null);
         const contentRef = useRef<HTMLDivElement>(null);
+        const cardRef = useRef<HTMLDivElement>(null);
+
+        const previousState = useRef<Flip.FlipState | null>(null);
+        const previousViewRef = useRef<AuthCardView | null>(null);
+        const previousStepRef = useRef<number | null>(null);
         const tlRef = useRef<gsap.core.Timeline | null>(null);
 
         const [isOpen, setIsOpen] = useState(false);
         const [view, setView] = useState<AuthCardView>('login');
-
+        const [signupStep, setSignupStep] = useState(1);
         const [direction, setDirection] = useState(1);
+
         const { isMobile } = useRafMediaQuery();
 
-        // Open Animation Card + Overlay
-        useGSAP(() => {
-            const card = cardRef.current;
-            const overlay = overlayRef.current;
-            if (!isOpen || !card || !overlay) return;
-
-            // Centering
-            gsap.set(card, { xPercent: -50, yPercent: -50 });
-
-            const tl = gsap.timeline({
-                defaults: {
-                    transformOrigin: '50% 50%',
-                    duration: 0.6,
-                    ease: 'power3.inOut',
-                    force3D: true
-                }
-            });
-
-            tl.fromTo([card, overlay], {
-                clipPath: 'circle(0% at 50% 50%)',
-                opacity: 0
-            }, {
-                clipPath: 'circle(150% at 50% 50%)',
-                opacity: 1
-            });
-
-            tlRef.current = tl;
-        }, { dependencies: [isOpen] });
-
-        // Close Animation
-        const closeDialog = useCallback(() => {
-            const tl = tlRef.current;
-            if (tl) tl.timeScale(1.5).reverse().then(() => {
-                setIsOpen(false);
-                setTimeout(() => {
-                    setView('login');
-                    setDirection(1);
-                }, 200);
-            });
-            else setIsOpen(false);
-        }, []);
-
-        // View Animation
-        const handleView = (newView: AuthCardView) => {
+        // Content Transition
+        const transition = useCallback((target: AuthCardView | number) => {
             const content = contentRef.current;
-            if (!content) {
-                setView(newView);
-                return;
-            }
+            const card = cardRef.current;
+            if (!content || !card) return;
 
-            // Slide Direction
-            const direction = viewOrder[newView] > viewOrder[view] ? 1 : -1;
-            setDirection(direction);
+            // View/Step Change
+            const hasViewChanged = typeof target === 'string';
 
-            // Container
+            // Direction
+            let d = 1;
+            if (hasViewChanged) d = viewOrder[target as AuthCardView] > viewOrder[view] ? 1 : -1;
+            else d = (target as number) > signupStep ? 1 : -1;
+            setDirection(d);
+
+            // Flip
+            previousState.current = Flip.getState(card);
             gsap.to(content, {
-                x: -30 * direction,
+                x: -120 * d,
                 opacity: 0,
-                duration: 0.6,
+                blur: '8px',
+                duration: 0.3,
                 ease: 'expo.out',
                 onComplete: () => {
-                    gsap.set(content, { x: 0, opacity: 1 })
-                    setView(newView);
+                    // Reset
+                    if (hasViewChanged) {
+                        setView(target as AuthCardView);
+                        setSignupStep(1);
+                    } else setSignupStep(target as number);
                 }
             });
-        };
+        }, [view, signupStep]);
 
-        // Resize Animation
+        // Animations
         useGSAP(() => {
             const card = cardRef.current;
             const content = contentRef.current;
-            if ( !isOpen || !card || !content) return;
+            if (!isOpen || !card || !content) return;
 
-            // Flip Plugin Registration
-            registerGsapPlugins();
+            // Content Changes
+            const isFirstOpen = previousViewRef.current === null;
+            const hasViewChanged = previousViewRef.current !== view;
 
-            // Current State
-            const state = Flip.getState(card);
+            previousViewRef.current = view;
+            previousStepRef.current = signupStep;
 
-            // Set Width
+            // Centering
             gsap.set(card, {
+                left: '50%',
+                top: '50%',
+                xPercent: -50,
+                yPercent: -50,
                 width: isMobile ? '90%' : 500,
+                minHeight: view === 'signup' ? 367 : 'auto',
                 height: 'auto'
-            });
-
-            // Animate to New State
-            Flip.from(state, {
-                targets: card,
-                duration: 0.3,
-                ease: 'power3.inOut',
-                simple: true
             });
 
             const tl = gsap.timeline({
@@ -180,38 +147,100 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 }
             });
 
-            // Content
-            tl.to(content, {
-                x: 0,
-                duration: 0.3
+            // First Mount - Card + Overlay
+            if (isFirstOpen) tl.fromTo([card, overlayRef.current], {
+                clipPath: 'circle(0% at 50% 50%)',
+                opacity: 0
+            }, {
+                clipPath: 'circle(150% at 50% 50%)',
+                opacity: 1,
+                duration: 0.6,
+                ease: 'power3.inOut'
             });
-            //Title + Text + Buttons Animation
-            tl.from(['.form-title', '.form-label', '.form-button'], {
+
+            // Flip - Resize
+            if (previousState.current) tl.add(Flip.from(previousState.current, {
+                targets: card,
+                duration: 0.3,
+                ease: 'power3.inOut',
+                simple: true,
+                onComplete: () => Flip.killFlipsOf(card)
+            }), isFirstOpen ? 0.4 : 0);
+
+            // SplitText - Title
+            if (hasViewChanged) {
+                const title = card.querySelector('.form-title');
+                if (title) {
+                    const split = new SplitText(title, { type: 'chars' });
+                    tl.from(split.chars, {
+                        y: 12,
+                        opacity: 0,
+                        rotateX: -90,
+                        stagger: 0.02,
+                        duration: 0.3,
+                        onComplete: () => split.revert()
+                    }, '-=0.3');
+                }
+            }
+
+            // Content
+            tl.fromTo(content, {
+                x: 120 * direction,
+                opacity: 0,
+                blur: '8px'
+            }, {
+                x: 0,
+                opacity: 1,
+                blur: '0px',
+                duration: 0.3,
+                clearProps: 'all'
+            }, '<');
+
+            // Text + Buttons Animation
+            tl.from(['.form-label', '.form-button'], {
                 y: 16,
                 opacity: 0,
                 duraiton: 0.3,
                 stagger: 0.2
-            }, 0.2)
+            }, '-=0.3')
             // Left Animation
             .from('.form-left', {
                 x: -16,
                 opacity: 0,
                 duration: 0.3,
                 stagger: 0.1
-            }, 0.3)
+            }, '<')
+            // Input Animation
+            .from('.form-input', {
+                scaleX: 0,
+                duration: 0.3
+            }, '<')
             // Right Animation
             .from('.form-right', {
                 x: 16,
                 opacity: 0,
                 duration: 0.3,
                 stagger: 0.1
-            }, 0.3)
-            // Input Animation
-            .from('.form-input', {
-                scaleX: 0,
-                duration: 0.4
-            }, 0.2);
-        }, { scope: cardRef, dependencies: [view, isMobile, isOpen] });
+            }, '>');
+
+            tlRef.current = tl;
+        }, { scope: cardRef, dependencies: [isOpen, view, signupStep, isMobile] });
+
+        // Close Animation
+        const closeDialog = useCallback(() => {
+            const tl = tlRef.current;
+            if (tl) tl.timeScale(1.5).reverse().then(() => {
+                // Reset All
+                setIsOpen(false);
+                setTimeout(() => {
+                    setView('login');
+                    setSignupStep(1);
+                    setDirection(1);
+                    previousViewRef.current = null;
+                }, 500);
+            });
+            else setIsOpen(false);
+        }, []);
 
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
@@ -235,14 +264,14 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                         ref={ buttonRef }
                         variant='accent'
                     >
-                        Login <LogIn /> / Signup <UserPlus />
+                        Login / Signup
                     </Button>
                 </Dialog.Trigger>
 
                 <Dialog.Portal forceMount>
                     { isOpen && (
                         <React.Fragment>
-                            {/* Background */}
+                            {/* Overlay */}
                             <Dialog.Overlay
                                 ref={ overlayRef }
                                 className={ overlayClasses }
@@ -260,7 +289,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
 
                                     <Dialog.Close asChild>
                                         <Button
-                                            className='form-right absolute right-0 p-1 focus-visible:ring-accent'
+                                            className='absolute right-0 p-1 focus-visible:ring-accent'
                                             variant='ghost'
                                             icon={ <X className='h-6 w-6 text-accent' /> }
                                         />
@@ -283,7 +312,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                             onFieldChange={ onFieldChange }
                                             onFieldBlur={ onFieldBlur }
                                             onSubmit={ handleSubmit }
-                                            switchView={ handleView }
+                                            switchView={ transition }
                                             onOAuth={ onOAuth }
                                         />
                                     ) }
@@ -294,7 +323,9 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                             onFieldChange={ onFieldChange }
                                             onFieldBlur={ onFieldBlur }
                                             onSubmit={ handleSubmit }
-                                            switchView={ handleView }
+                                            switchView={ transition }
+                                            step={ signupStep }
+                                            onStepChange={ transition }
                                         />
                                     ) }
                                     { view === 'forgotPassword' && (
@@ -303,7 +334,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                             isLoading={ isLoading }
                                             onFieldChange={ onFieldChange }
                                             onSubmit={ handleSubmit }
-                                            switchView={ handleView }
+                                            switchView={ transition }
                                         />
                                     ) }
                                 </div>

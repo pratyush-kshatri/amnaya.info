@@ -31,25 +31,25 @@ const ForgotPasswordForm: React.FC<SharedAuthCardProps> = ({
                     onChange={ (e) => onFieldChange('emailOrUsername', e.target.value) }
                     autoComplete='username email'
                     placeholder='Enter your Username/Email'
-                    required
                 />
             </div>
 
             <div className='form-button flex flex-row justify-between gap-x-2'>
+                <Button
+                    variant='secondary'
+                    icon={ <LogIn className='w-5 h-5' /> }
+                    type='button'
+                    onClick={ () => switchView('login') }
+                >
+                    Login
+                </Button>
                 <Button
                     variant='primary'
                     loading={ isLoading }
                     icon={ <RotateCcwKey className='w-5 h-5' />}
                     type='submit'
                 >
-                    Reset Password
-                </Button>
-                <Button
-                    variant='secondary'
-                    icon={ <LogIn className='w-5 h-5' /> }
-                    onClick={ () => switchView('login') }
-                >
-                    Back to Login
+                    Reset
                 </Button>
             </div>
         </form>

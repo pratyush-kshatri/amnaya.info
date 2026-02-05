@@ -45,7 +45,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         onBlur={ () => onFieldBlur?.('firstName') }
                         placeholder='First Name'
                         autoComplete='given-name'
-                        required
+                        aria-label='First Name'
                     />
                     {/* Last Name */}
                     <input
@@ -56,7 +56,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         onBlur={ () => onFieldBlur?.('lastName') }
                         placeholder='Last Name'
                         autoComplete='family-name'
-                        required
+                        aria-label='Last Name'
                     />
                     {/* DOB */}
                     <div className='flex flex-row items-center gap-x-2'>
@@ -71,7 +71,6 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onChange={ (e) => onFieldChange('birthDate', e.target.value) }
                             onBlur={ () => onFieldBlur?.('birthDate') }
                             autoComplete='bday'
-                            required
                         />
                         </div>
                     </div>
@@ -86,7 +85,6 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             value={ values.gender || '' }
                             onChange={ (e) => onFieldChange('gender', e.target.value) }
                             autoComplete='sex'
-                            required
                         >
                             <option value='' disabled>Select</option>
                             <option value='male'>Male</option>
@@ -111,7 +109,6 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('username') }
                             autoComplete='username'
                             placeholder='Enter your Username'
-                            required
                         />
                     </div>
                     {/* Email */}
@@ -126,7 +123,6 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('email') }
                             autoComplete='email'
                             placeholder='Enter your email'
-                            required
                         />
                     </div>
                     {/* Password */}
@@ -141,7 +137,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('password') }
                             autoComplete='new-password'
                             placeholder='Enter your password'
-                            required
+                            aria-label='Password'
                         />
                         <Button
                             className='form-right p-1 focus-visible:ring-accent'
@@ -156,13 +152,13 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         <RotateCcwKey className={ styles.icon } />
                         <input
                             className={ styles.input }
-                            name='password'
+                            name='confirmPassword'
                             type='password'
-                            value={ values.password || '' }
-                            onChange={ (e) => onFieldChange('password', e.target.value) }
-                            onBlur={ () => onFieldBlur?.('password') }
+                            value={ values.confirmPassword || '' }
+                            onChange={ (e) => onFieldChange('confirmPassword', e.target.value) }
+                            onBlur={ () => onFieldBlur?.('confirmPassword') }
                             placeholder='Confirm your password'
-                            required
+                            aria-label='Confirm Password'
                         />
                     </div>
                 </div>
@@ -175,38 +171,40 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                 { step < 2 ? (
                     <React.Fragment>
                         <Button
+                            variant='secondary'
+                            icon={ <LogIn className='w-5 h-5' /> }
+                            type='button'
+                            onClick={ () => switchView('login') }
+                        >
+                            LogIn
+                        </Button>
+                        <Button
                             variant='primary'
                             loading={ isLoading }
                             icon={ <ArrowRight className='w-5 h-5' />}
+                            type='button'
                             onClick={ () => onStepChange?.(2) }
                         >
                             Next
-                        </Button>
-                        <Button
-                            variant='secondary'
-                            icon={ <LogIn className='w-5 h-5' /> }
-                            onClick={ () => switchView('login') }
-                        >
-                            Back to Login
                         </Button>
                     </React.Fragment>
                 ) : (
                     <React.Fragment>
                         <Button
+                            variant='secondary'
+                            icon={ <ArrowLeft className='w-5 h-5' /> }
+                            type='button'
+                            onClick={ () => onStepChange?.(1) }
+                        >
+                            Back 
+                        </Button>
+                        <Button
                             variant='primary'
                             loading={ isLoading }
                             icon={ <UserPlus className='w-5 h-5' />}
                             type='submit'
-                            onClick={ onSubmit }
                         >
-                            Create Account
-                        </Button>
-                        <Button
-                            variant='secondary'
-                            icon={ <ArrowLeft className='w-5 h-5' /> }
-                            onClick={ () => onStepChange?.(1) }
-                        >
-                            Previous Step 
+                            Create
                         </Button>
                     </React.Fragment>
                 ) }

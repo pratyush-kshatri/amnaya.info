@@ -40,7 +40,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         autoComplete='username email'
                         placeholder='Enter your Username/Email'
                         aria-label='Email or Username'
-                        required
                     />
                 </div>
 
@@ -57,7 +56,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         autoComplete='current-password'
                         placeholder='Enter your password'
                         aria-label='Password'
-                        required
                     />
                     <Button
                         className='form-right p-1 focus-visible:ring-accent'
@@ -70,8 +68,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 <div className='flex flex-row items-center justify-between'>
                     <div className='form-left'>
                         <Button
-                            className={ styles.label + ' p-1' }
+                            className={ styles.label + ' p-1 cursor-pointer' }
                             variant='ghost'
+                            type='button'
                             onClick={ () => switchView('forgotPassword') }
                         >
                             Forgot Password?
@@ -90,19 +89,20 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
                 <div className='form-button flex flex-row justify-center gap-x-2'>
                     <Button
+                        variant='secondary'
+                        icon={ <UserPlus className='w-5 h-5' /> }
+                        type='button'
+                        onClick={ () => switchView('signup') }
+                    >
+                        Sign Up
+                    </Button>
+                    <Button
                         variant='primary'
                         loading={ isLoading }
                         icon={ <LogIn className='w-5 h-5' />}
                         type='submit'
                     >
                         Login
-                    </Button>
-                    <Button
-                        variant='secondary'
-                        icon={ <UserPlus className='w-5 h-5' /> }
-                        onClick={ () => switchView('signup') }
-                    >
-                        Sign Up
                     </Button>
                 </div>
             </form>

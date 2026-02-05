@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import { SplitText } from 'gsap/SplitText';
+import { Observer } from 'gsap/Observer';
 
 let registered = false;
 
@@ -23,6 +24,9 @@ async function registerGsapPlugins() {
 
         if (w.SplitText) gsap.registerPlugin(w.SplitText);
         else gsap.registerPlugin(SplitText);
+
+        if (w.Observer) gsap.registerPlugin(w.Observer);
+        else gsap.registerPlugin(Observer);
 
         registered = true;
     } catch (e) {

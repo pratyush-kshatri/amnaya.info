@@ -1,39 +1,34 @@
 import type { Meta, StoryObj } from '@storybook/nextjs';
-import { AuthCard, AuthCardProps } from './authCard';
-import { useState } from 'react';
+import { AuthCard } from './authCard';
 
-const AuthCardWrapper = (args: AuthCardProps) => {
-  const [credentials, setCredentials] = useState({
-    emailOrUsername: '',
-    password: '',
-    rememberMe: false
-  });
+import { Button } from '../button/button';
 
-  const handleFieldChange = (field: string, value: any) => {
-    setCredentials((prev) => ({ ...prev, [field]: value }));
-  };
-
-  return (
-    <AuthCard
-      { ...args }
-      credentials={ credentials }
-      onFieldChange={ handleFieldChange }
-      onSubmit={ () => alert('Submit Triggered') }
-    />
-  );
+//Mock Credentials
+const MOCK_CREDENTIALS = {
+  usernameOrEmail: '',
+  password: '',
+  rememberMe: false,
+  firstName: '',
+  lastName: '',
+  birthDate: '',
+  gender: '',
+  username: '',
+  email: '',
+  confirmPassword: ''
 };
 
 const meta: Meta<typeof AuthCard> = {
   title: 'Components/AuthCard',
   component: AuthCard,
-  parameters: {
-    layout: 'centered',
+  args: {
+    credentials: MOCK_CREDENTIALS,
+    onFieldChange: (field: string, value: any) => console.log(`${field} changed to ${value}`),
+    onSubmit: () => alert('Submit Triggered'),
+    trigger: <Button variant='accent'>Login / Signup</Button>
   }
 };
 
 export default meta;
 type Story = StoryObj<typeof AuthCard>;
 
-export const Playground: Story = {
-  render: (args) => <AuthCardWrapper { ...args } />
-};
+export const Playground: Story = {};

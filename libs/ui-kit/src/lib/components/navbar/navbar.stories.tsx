@@ -2,9 +2,11 @@ import type { Meta, StoryObj } from '@storybook/nextjs';
 import { Navbar } from './navbar';
 
 import { Contact, House, MessageCircle, Settings, UserCheckIcon } from 'lucide-react';
+
 import { SidePanelGroupInterface } from './sidePanel';
-// DUMMY DATA
-const MOCK_DATA: SidePanelGroupInterface[] = [
+
+// Mock Nav Links
+const MOCK_NAV: SidePanelGroupInterface[] = [
     {
         title: 'Navigation',
         items: [
@@ -22,6 +24,18 @@ const MOCK_DATA: SidePanelGroupInterface[] = [
         ]
     }
 ];
+// Mock User
+const MOCK_USER = {
+    name: 'Pratyush',
+    email: 'p.kshatri@outlook.com',
+    avatar: ''
+};
+// Mock Auth
+const MOCK_AUTH = {
+    credentials: { usernameOrEmail: '', password: '', rememberMe: false },
+    onFieldChange: () => console.log('Auth field changed'),
+    onSubmit: () => alert('Submit Triggered')
+};
 
 const meta: Meta<typeof Navbar> = {
     title: 'Components/Navbar',
@@ -34,16 +48,15 @@ const meta: Meta<typeof Navbar> = {
         }
     },
     argTypes: {
-        onMenuToggle: {
-            action: 'menu toggled'
-        },
         isAuthenticated: {
             control: 'boolean'
         }
     },
     args: {
-        navLinks: MOCK_DATA,
-        isAuthenticated: false
+        navLinks: MOCK_NAV,
+        isAuthenticated: false,
+        user: MOCK_USER,
+        authProps: MOCK_AUTH
     }
 };
 

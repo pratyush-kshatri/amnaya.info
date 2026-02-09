@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import path, { dirname } from 'node:path';
+import { mergeConfig, optimizeDeps } from 'vite';
 
 import type { StorybookConfig } from '@storybook/nextjs';
 
@@ -12,6 +13,19 @@ const config: StorybookConfig = {
       builder: {
         viteConfigPath: 'vite.config.mts',
       },
+      viteFinal: async (config: any) => {
+        return mergeConfig(config, {
+          resolve: {
+            alias: {
+              three: path.resolve(process.cwd(), 'node_modules/three')
+            },
+            preserveSymlinks: false
+          },
+          optimizeDeps: {
+            include: ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing']
+          }
+        });
+      }
     },
   },
 };

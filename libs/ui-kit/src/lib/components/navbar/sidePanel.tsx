@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Flip } from "gsap/Flip";
 import { SplitText } from "gsap/SplitText";
+import { Observer } from "gsap/Observer";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cva } from "class-variance-authority";
@@ -18,18 +19,18 @@ import { useRafMediaQuery } from "../../utils/useRafMediaQuery";
 import { cn } from "../../utils/cn";
 
 import { AuthCard, AuthCardProps } from "../authCard/authCard";
+
 import { useTouch } from "../../utils/useTouch";
-import { Observer } from "gsap/Observer";
 
 // Tailwind
 const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu';
-const panelClasses = 'absolute z-50 flex flex-col gap-2 px-4 py-2 w-full bg-surface rounded-4xl border border-accent outline-none transform-gpu backface-hidden';
+const panelClasses = 'absolute z-50 flex flex-col gap-2 p-3 w-full bg-surface rounded-4xl border border-accent outline-none will-change[clip-path,transform] transform-gpu backface-hidden';
 
 const sidePanelItemClasses = cva(
     [
         'side-panel-item group relative flex w-full overflow-visible',
         'transition-colors duration-150 ease-in-out',
-        'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-accent'
+        'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-accent focus-within:ring-offset-surface'
     ], {
         variants: {
             active: {
@@ -95,32 +96,31 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
         useGSAP(() => {
             const content = contentRef.current;
             const navbar = navbarRef.current;
-            if (!navbar || !content) return;
+            if (!isOpen || !navbar || !content) return;
 
-            const handleResize = () => {
-                if (!isOpen) return;
-
-                const state = Flip.getState(content);
+            const updatePosition = () => {
                 const navbarRect = navbar.getBoundingClientRect();
 
-                // Update Position
-                gsap.set(content, {
+                return {
                     left: navbarRect.left,
                     top: navbarRect.bottom + 12,
                     width: isMobile ? navbarRect.width : 320
-                });
+                };
+            }
 
-                // Animate New Position
+            gsap.set(content, updatePosition());
+
+            const observer = new ResizeObserver(() => {
+                const state = Flip.getState(content);
+                gsap.set(content, updatePosition());
+
                 Flip.from(state, {
                     duration: 0.3,
-                    ease: 'power3.inOut',
+                    ease: 'expo.out',
                     simple: true
                 });
-            };
+            });
 
-            handleResize();
-
-            const observer = new ResizeObserver(() => requestAnimationFrame(handleResize));
             observer.observe(navbar);
 
             return () => observer.disconnect();
@@ -133,6 +133,8 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
 
             // Touch
             gsap.set(panel, {
+                transformOrigin: '50% 0%',
+                willChange: 'clip-path, transform, opacity',
                 touchAction: 'pan-y',
                 overscrollBehavior: 'contain'
             })
@@ -140,72 +142,70 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
             const items = panel.querySelectorAll('.side-panel-item');
             const titles = panel.querySelectorAll('.side-panel-title');
 
-            const tl = gsap.timeline({
-                defaults: {
-                    ease: 'expo.out',
-                    force3D: true
-                }
-            });
+            const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
             // Open/Close Animation
             tl.fromTo(panel, {
                 y: -12,
                 clipPath: 'circle(0% at 50% 0%)',
-                blur: '8px',
-                opacity: 0
+                autoAlpha: 0
             }, {
                 y: 0,
                 clipPath: 'circle(150% at 50% 0%)',
-                blur: '0px',
-                opacity: 1,
-                duration: 0.6,
-                ease: 'power3.inOut'
+                autoAlpha: 1,
+                duration: 0.65,
+                ease: 'power4.inOut',
+                stagger: 0.05
             }, 0)
-            .fromTo(overlayRef.current, {
+            .fromTo(panel, {
                 clipPath: 'circle(0% at 50% 0%)',
-                opacity: 0
+                autoAlpha: 0
             }, {
                 clipPath: 'circle(150% at 50% 0%)',
-                opacity: 1,
-                duration: 0.6,
-                ease: 'power3.inOut'
-            }, 0);            
+                autoAlpha: 1,
+                duration: 0.65,
+                ease: 'power4.inOut',
+                stagger: 0.05
+            }, '<');
 
-            items.forEach((item, index) => {
+            items.forEach((item) => {
                 const icon = item.querySelector<HTMLElement>('.side-panel-icon');
                 const label = item.querySelector('.side-panel-label');
 
                 const split = new SplitText(label as HTMLElement, { type: 'chars' });
 
                 if (label) tl.from(split.chars, {
-                    y: 8,
-                    opacity: 0,
+                    yPercent: 100,
+                    autoAlpha: 0,
                     rotateX: -90,
                     stagger: 0.02,
-                    duration: 0.4,
+                    duration: 0.5,
+                    ease: 'back.out(1.7)',
                     onComplete: () => split.revert()
-                }, '>-0.3');
+                }, '<+0.04');
 
                 if (icon) tl.from(icon, {
-                    x: 12,
-                    opacity: 0,
-                    duration: 0.3
+                    scale: 0,
+                    autoAlpha: 0,
+                    duration: 0.4,
+                    ease: 'back.out(2)'
                 }, '<');
             });
 
             // Title Animation
             tl.from(titles, {
-                x: -10,
-                opacity: 0,
-                duration: 0.3
-            }, '>-0.3');
+                x: -20,
+                autoAlpha: 0,
+                duration: 0.4,
+                stagger: 0.1
+            }, 0.2);
 
             tlRef.current = tl;
         }, { scope: panelRef, dependencies: [isOpen] });
 
         // Toggle
         const handleClose = () => {
-            if (tlRef.current) tlRef.current.timeScale(1.5).reverse().then(onClose);
+            if (tlRef.current) tlRef.current.timeScale(2).reverse().then(onClose);
             else onClose();
         };
 
@@ -226,8 +226,8 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 type: 'touch,pointer',
                 capture: true,
                 lockAxis: true,
-                onUp: () => {
-                    if (isOpen) handleClose();
+                onUp: (self) => {
+                    if (isOpen && self.deltaY < -10) handleClose();
                 },
                 dragMinimum: 10,
                 preventDefault: true
@@ -335,7 +335,7 @@ const SidePanelHeader = React.memo(({
             <Link
                 href='/profile'
                 aria-current={ active ? 'page' : undefined }
-                className='flex w-full items-center justify-between px-4 py-2'
+                className='flex w-full items-center justify-between'
             >
                 <span className='side-panel-label'>
                     Hi, { user?.name }!

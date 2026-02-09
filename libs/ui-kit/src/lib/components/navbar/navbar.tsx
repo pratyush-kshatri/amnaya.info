@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { Flip } from "gsap/Flip";
 import { Observer } from "gsap/Observer";
+import Link from "next/link";
 import { Command } from "lucide-react";
 
 import { AuthCardProps } from "../authCard/authCard";
@@ -20,10 +20,11 @@ import { SidePanel, SidePanelGroupInterface } from "./sidePanel";
 import { Tooltip, TooltipRef } from "../utility/tooltip";
 
 import { mergeRefs } from "../../utils/mergeRefs";
+
 import { useTouch } from "../../utils/useTouch";
 
 // Tailwind
-const navbarClasses = 'fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between px-4 py-2 rounded-full bg-surface border border-accent transform-gpu will-change-transform backface-hidden';
+const navbarClasses = 'fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between p-3 rounded-full bg-surface border border-accent transform-gpu will-change-[width,transform] backface-hidden';
 
 interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
     onMenuToggle?: (isOpen: boolean) => void;
@@ -59,24 +60,11 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
             const navbar = navbarRef.current;
             if (!navbar) return;
 
-            const state = Flip.getState(navbar);
-
-            // Initial State
             gsap.set(navbar, {
-                touchAction: 'pan-y',
-                overscrollBehavior: 'contain',
                 width: isMobile ? '95vw' : '90vw',
-                maxWidth: '1024px'
-            });
-
-            // Animate to New State
-            Flip.from(state, {
-                duration: 0.3,
-                ease: 'power3.inOut',
-                absolute: false,
-                simple: true,
-                force3D: true,
-                onComplete: () => Flip.killFlipsOf(navbar)
+                maxWidth: '1024px',
+                touchAction: 'pan-y',
+                overscrollBehavior: 'contain'
             });
         }, { scope: navbarRef, dependencies: [isMobile] });
 
@@ -110,17 +98,17 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
 
             const swipeObserver = Observer.create({
                 target: navbarRef.current,
+                type: 'touch,pointer',
                 capture: true,
                 lockAxis: true,
-                type: 'touch,pointer',
-                onDown: () => {
+                onDown: (self) => {
                     if (!isMenuOpen && !isAnimating.current) {
                         isAnimating.current = true;
                         handleToggle();
                     }
                 },
                 onRelease: () => isAnimating.current = false,
-                dragMinimum: 10,
+                tolerance: 10,
                 preventDefault: true
             });
 
@@ -147,14 +135,17 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
                                 onClick={ handleToggle }
                                 aria-label={ isMenuOpen ? 'Close Menu' : 'Open Menu' }
                                 aria-expanded={ isMenuOpen }
-                                className='p-1 text-accent focus-visible:ring-accent'
+                                className='p-1 text-surface bg-accent focus-visible:ring-accent'
                                 icon={ <MenuIcon isOpen={ isMenuOpen } className='w-7 h-7' /> }
                             />
                         </div>
                         {/* Brand Name */}
-                        <span className='text-xl text-accent font-semibold tracking-tight select-none'>
-                            Amnaya.info
-                        </span>
+                        <Link
+                            href='/'
+                            className='text-xl text-accent font-semibold tracking-tight p-1 select-none outline-none rounded-full focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface'
+                        >
+                        <h1>Amnaya.info</h1>
+                        </Link>
                     </div>
                 </nav>
                 {/* Tooltip */}

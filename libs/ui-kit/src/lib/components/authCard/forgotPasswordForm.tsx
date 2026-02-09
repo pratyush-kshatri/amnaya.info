@@ -1,7 +1,7 @@
 import React from "react";
 import { LogIn, Mail, RotateCcwKey } from 'lucide-react';
 
-import { SharedAuthCardProps, styles } from "./authCard";
+import { SharedAuthCardProps, styles } from "./sharedAuth";
 
 import { Button } from '../button/button';
 

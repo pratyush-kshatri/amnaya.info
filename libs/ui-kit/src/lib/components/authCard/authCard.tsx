@@ -18,36 +18,11 @@ import { LoginForm } from './loginForm';
 import { SignupForm } from './signupForm';
 import { ForgotPasswordForm } from './forgotPasswordForm';
 
+import { AuthCardView, styles, viewOrder } from './sharedAuth';
+
 // Tailwind
 const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu pointer-events-auto';
-const contentClasses = 'fixed left-1/2 top-1/2 z-50 flex flex-col w-full rounded-4xl border border-accent bg-surface p-4 overflow-hidden outline-none will-change-transform';
-// Shared
-const styles = {
-    label: 'px-2 block text-xs text-foreground font-semibold tracking-tight',
-    input: 'form-input w-full border-b border-accent rounded-md px-4 py-2 outline-none placeholder:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent',
-    icon: 'form-left w-5 h-5 text-accent stroke-[2.5] flex-shrink-0',
-    seperator: 'mt-2 mb-2 h-[1px] w-full bg-gradient-to-r from-transparent via-accent to-transparent',
-};
-
-interface SharedAuthCardProps {
-    isLoading?: boolean;
-    errors?: Record<string, string | undefined>;
-    values: Record<string, any>;
-    step?: number;
-    onFieldChange: (field: string, value: any) => void;
-    onFieldBlur?: (field: string) => void;
-    onSubmit: (e: React.FormEvent) => void;
-    switchView: (view: AuthCardView) => void;
-    onStepChange?: (step: number) => void;
-}
-
-const viewOrder: Record<AuthCardView, number> = {
-    forgotPassword: -1,
-    login: 0,
-    signup: 1
-};
-
-type AuthCardView = 'login' | 'signup' | 'forgotPassword';
+const contentClasses = 'fixed left-1/2 top-1/2 z-50 flex flex-col w-full rounded-4xl border border-accent bg-surface p-4 overflow-hidden outline-none will-change-[width,height,transform]';
 
 interface AuthCardProps {
     open?: boolean;
@@ -148,12 +123,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
             const isViewChange = previousViewRef.current !== view;
             previousViewRef.current = view;
 
-            const tl = gsap.timeline({
-                defaults: {
-                    ease: 'expo.out',
-                    force3D: true
-                }
-            });
+            const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
             // First Mount - Card + Overlay
             if (!flipState.current) tl.fromTo([content, overlayRef.current], {
@@ -163,12 +133,12 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 clipPath: 'circle(150% at 50% 50%)',
                 autoAlpha: 1,
                 duration: 0.6,
-                ease: 'power3.inOut'
+                ease: 'power4.inOut'
             }); // Flip - Resize
             else tl.add(Flip.from(flipState.current, {
                 targets: content,
                 duration: 0.3,
-                ease: 'power3.inOut',
+                ease: 'power4.inOut',
                 // props: 'xPercent,yPercent',
                 absolute: false,
                 onComplete: () => { flipState.current = null }
@@ -186,6 +156,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                     rotateX: -90,
                     stagger: 0.02,
                     duration: 0.3,
+                    ease: 'back.out(1.7)',
                     onComplete: () => split.revert()
                 }, '-=0.3');
             });
@@ -215,7 +186,8 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 x: -16,
                 autoAlpha: 0,
                 duration: 0.3,
-                stagger: 0.1
+                stagger: 0.1,
+                ease: 'back.out(2)'
             }, '<')
             // Input Animation
             .from('.form-input', {
@@ -228,6 +200,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 autoAlpha: 0,
                 duration: 0.3,
                 stagger: 0.1,
+                ease: 'back.out(2)'
             }, '>');
 
             tlRef.current = tl;
@@ -298,7 +271,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                     ) }
                                 >
                                     <Dialog.Title className='form-title text-xl font-semibold text-accent tracking-tight'>
-                                        { titles[view] }
+                                        <span className='inline-block'>{ titles[view] }</span>
                                     </Dialog.Title>
 
                                     <Dialog.Close asChild>
@@ -363,4 +336,4 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
 
 AuthCard.displayName = 'AuthCard';
 
-export { AuthCard, AuthCardProps, SharedAuthCardProps, styles };
+export { AuthCard, AuthCardProps, styles };

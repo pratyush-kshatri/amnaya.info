@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, ArrowRight, Cake, Eye, EyeOff, Key, LogIn, Mail, RotateCcwKey, UserPlus, UserRound, VenusAndMars } from 'lucide-react';
 
-import { SharedAuthCardProps, styles } from "./authCard";
+import { SharedAuthCardProps, styles } from "./sharedAuth";
 
 import { Button } from '../button/button';
 
@@ -28,7 +28,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
 
             {/* Step Title */}
             <div className='form-title text-center font-semibold text-accent tracking-tight'>
-                { titles[step] }
+                <span className='inline-block'>{ titles[step] }</span>
             </div>
 
             {/* Seperator */}
@@ -64,7 +64,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         <label className={ styles.label }>Date of Birth</label>
                         <div className='flex-1 flex justify-center'>
                         <input
-                            className='form-input text-center border-b border-accent rounded-md px-4 py-2 outline-none placeholder:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent'
+                            className='form-input text-center border-b border-accent rounded-full px-4 py-2 outline-none text-accent focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent focus-visible:ring-offset-surface'
                             name='birthDate'
                             type='date'
                             value={ values.birthDate || '' }
@@ -80,7 +80,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         <label className={ styles.label }>Gender</label>
                         <div className='flex-1 flex justify-center'>
                         <select
-                            className='form-input text-center border-b border-accent rounded-md px-4 py-2 outline-none placeholder:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent'
+                            className='form-input text-center border-b border-accent rounded-full px-4 py-2 outline-none text-accent focus:outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent focus-visible:ring-offset-surface'
                             name='gender'
                             value={ values.gender || '' }
                             onChange={ (e) => onFieldChange('gender', e.target.value) }
@@ -99,7 +99,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
             { step === 2 && (
                 <div className='flex flex-col gap-y-2'>
                     {/* Username */}
-                    <div className='flex flex-row items-center gap-x-2'>
+                    <div className='flex flex-row items-center gap-x-4'>
                         <UserRound className={ styles.icon } />
                         <input
                             className={ styles.input }
@@ -112,7 +112,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         />
                     </div>
                     {/* Email */}
-                    <div className='flex flex-row items-center gap-x-2'>
+                    <div className='flex flex-row items-center gap-x-4'>
                         <Mail className={ styles.icon } />
                         <input
                             className={ styles.input }
@@ -126,7 +126,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         />
                     </div>
                     {/* Password */}
-                    <div className='flex flex-row items-center gap-x-2'>
+                    <div className='flex flex-row items-center gap-x-4'>
                         <Key className={ styles.icon } />
                         <input
                             className={ styles.input }
@@ -148,7 +148,7 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         />
                     </div>
                     {/* Confirm Password */}
-                    <div className='flex flex-row items-center gap-x-2'>
+                    <div className='flex flex-row items-center gap-x-4'>
                         <RotateCcwKey className={ styles.icon } />
                         <input
                             className={ styles.input }

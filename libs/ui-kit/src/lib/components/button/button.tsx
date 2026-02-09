@@ -16,7 +16,7 @@ const buttonVariants = cva(
   [
     'inline-flex items-center whitespace-nowrap cursor-pointer select-none',
     'rounded-full font-medium px-4 py-2 bg-surface border overflow-hidden',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+    'outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
     'disabled:pointer-events-none',
     'transform-gpu backface-hidden',
   ],

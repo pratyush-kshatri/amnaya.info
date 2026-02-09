@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Chrome, Eye, EyeOff, Github, Key, LogIn, UserPlus, UserRound } from 'lucide-react';
 
-import { SharedAuthCardProps, styles } from "./authCard";
+import { SharedAuthCardProps, styles } from "./sharedAuth";
 
 import { Button } from '../button/button';
 
@@ -29,7 +29,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 key='login-form'
             >
                 {/* Username */}
-                <div className='flex flex-row items-center gap-x-2'>
+                <div className='flex flex-row items-center gap-x-4'>
                     <UserRound className={ styles.icon } />
                     <input
                         className={ styles.input }
@@ -44,7 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 </div>
 
                 {/* Password */}
-                <div className='flex flex-row items-center gap-x-2'>
+                <div className='flex flex-row items-center gap-x-4'>
                     <Key className={ styles.icon } />
                     <input
                         className={ styles.input }
@@ -79,7 +79,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                     <div className='form-right flex flex-row'>
                         <span className={ styles.label }>Remember Me?</span>
                         <input
-                            className='w-4 h-4 rounded-md border-accent text-accent'
+                            className='w-4 h-4 appearance-none rounded-full border border-accent bg-transparent cursor-pointer'
                             type='checkbox'
                             checked={ values.rememberMe || false }
                             onChange={ (e) => onFieldChange('rememberMe', e.target.checked) }

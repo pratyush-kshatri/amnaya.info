@@ -6,7 +6,7 @@ import { View } from "@react-three/drei";
 
 import { Background } from "./background";
 
-import { Ui3D } from "../../components/utility/ui3d";
+import { Ui3D } from "../../utils/ui3d";
 
 interface SceneLayoutProps {
     children: React.ReactNode;

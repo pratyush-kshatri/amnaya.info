@@ -1,4 +1,15 @@
 'use client';
 
-export const useTouch = typeof window !== 'undefined'
-    && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+import { useEffect, useState } from 'react';
+
+function useTouch() {
+    const [isTouch, setIsTouch] = useState(false);
+
+    useEffect(() => {
+        setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
+
+    return isTouch;
+}
+
+export { useTouch };

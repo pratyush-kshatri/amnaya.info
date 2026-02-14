@@ -24,7 +24,7 @@ import { mergeRefs } from "../../utils/mergeRefs";
 import { useTouch } from "../../utils/useTouch";
 
 // Tailwind
-const navbarClasses = 'fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between p-3 rounded-full bg-surface border border-accent transform-gpu will-change-[width,transform] backface-hidden';
+const navbarClasses = 'fixed top-2 left-1/2 -translate-x-1/2 z-40 flex items-center justify-between p-3 rounded-full bg-surface border border-accent transform-gpu will-change-[width,transform] backface-hidden';
 
 interface NavbarProps extends React.HTMLAttributes<HTMLElement> {
     onMenuToggle?: (isOpen: boolean) => void;
@@ -53,20 +53,7 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
         const mergedRef = mergeRefs([navbarRef, ref]);
 
         const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-        // Width Animation
-        const { isMobile } = useRafMediaQuery();
-        useGSAP(() => {
-            const navbar = navbarRef.current;
-            if (!navbar) return;
-
-            gsap.set(navbar, {
-                width: isMobile ? '95vw' : '90vw',
-                maxWidth: '1024px',
-                touchAction: 'pan-y',
-                overscrollBehavior: 'contain'
-            });
-        }, { scope: navbarRef, dependencies: [isMobile] });
+        const isTouch = useTouch();
 
         // Menu Toggle
         const handleToggle = useCallback(() => {
@@ -77,27 +64,24 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
             });
         }, [onMenuToggle]);
 
-        // Keyboard Toggle (Cmd/Ctrl + B)
-        useEffect(() => {
-            const handleKeyDown = (e: KeyboardEvent) => {
-                if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') { // Support for Mac/Windows
-                    e.preventDefault(); // Prevent Browser Sidebar
-                    handleToggle();
-                }
-                // Close on Esc
-                if (e.key === 'Escape' && isMenuOpen) handleToggle();
-            };
+        const { isMobile } = useRafMediaQuery();
 
-            window.addEventListener('keydown', handleKeyDown);
-            return () => window.removeEventListener('keydown', handleKeyDown);
-        }, [handleToggle, isMenuOpen]);
-
-        // Mobile - Swipe
+        // Width + Mobile Swipe
         useGSAP(() => {
-            if (!useTouch || !navbarRef.current) return;
+            const navbar = navbarRef.current;
+            if (!navbar) return;
+
+            gsap.set(navbar, {
+                width: isMobile ? '95vw' : '90vw',
+                maxWidth: '1024px',
+                touchAction: 'pan-y',
+                overscrollBehavior: 'contain'
+            });
+
+            if (!isTouch) return;
 
             const swipeObserver = Observer.create({
-                target: navbarRef.current,
+                target: navbar,
                 type: 'touch,pointer',
                 capture: true,
                 lockAxis: true,
@@ -113,7 +97,22 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
             });
 
             return () => swipeObserver?.kill();
-        }, [isMenuOpen]);
+        }, { scope: navbarRef, dependencies: [isMobile, isMenuOpen, isTouch, handleToggle] });
+
+        // Keyboard Toggle (Cmd/Ctrl + B)
+        useEffect(() => {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') { // Support for Mac/Windows
+                    e.preventDefault(); // Prevent Browser Sidebar
+                    handleToggle();
+                }
+                // Close on Esc
+                if (e.key === 'Escape' && isMenuOpen) handleToggle();
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }, [handleToggle, isMenuOpen]);
 
         return (
             <React.Fragment>
@@ -170,4 +169,4 @@ const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
 
 Navbar.displayName = 'Navbar';
 
-export { Navbar, NavbarProps };
+export { Navbar, type NavbarProps };

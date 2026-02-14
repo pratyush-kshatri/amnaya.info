@@ -8,6 +8,7 @@ import { Button } from '../button/button';
 const SignupForm: React.FC<SharedAuthCardProps> = ({
     isLoading,
     values,
+    errors,
     onFieldChange,
     onFieldBlur,
     onSubmit,
@@ -17,6 +18,15 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
 
 }) => {
     const [showPassword, setShowPassword] = useState(false);
+
+    const firstNameError = errors?.firstName;
+    const lastNameError = errors?.lastName;
+    const birthDateError = errors?.birthDate;
+    const genderError = errors?.gender;
+    const usernameError = errors?.username;
+    const emailError = errors?.email;
+    const passwordError = errors?.password;
+    const confirmPasswordError = errors?.confirmPassword;
 
     const titles: Record<number, string> = {
         1: 'Personal Information',
@@ -46,6 +56,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         placeholder='First Name'
                         autoComplete='given-name'
                         aria-label='First Name'
+                        aria-invalid={ !!firstNameError }
+                        aria-describedby={ firstNameError ? 'auth-signup-first-name-error' : undefined }
                     />
                     {/* Last Name */}
                     <input
@@ -57,6 +69,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                         placeholder='Last Name'
                         autoComplete='family-name'
                         aria-label='Last Name'
+                        aria-invalid={ !!lastNameError }
+                        aria-describedby={ lastNameError ? 'auth-signup-last-name-error' : undefined }
                     />
                     {/* DOB */}
                     <div className='flex flex-row items-center gap-x-2'>
@@ -71,6 +85,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onChange={ (e) => onFieldChange('birthDate', e.target.value) }
                             onBlur={ () => onFieldBlur?.('birthDate') }
                             autoComplete='bday'
+                            aria-invalid={ !!birthDateError }
+                            aria-describedby={ birthDateError ? 'auth-signup-birth-date-error' : undefined }
                         />
                         </div>
                     </div>
@@ -84,7 +100,10 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             name='gender'
                             value={ values.gender || '' }
                             onChange={ (e) => onFieldChange('gender', e.target.value) }
+                            onBlur={ () => onFieldBlur?.('gender') }
                             autoComplete='sex'
+                            aria-invalid={ !!genderError }
+                            aria-describedby={ genderError ? 'auth-signup-gender-error' : undefined }
                         >
                             <option value='' disabled>Select</option>
                             <option value='male'>Male</option>
@@ -109,6 +128,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('username') }
                             autoComplete='username'
                             placeholder='Enter your Username'
+                            aria-invalid={ !!usernameError }
+                            aria-describedby={ usernameError ? 'auth-signup-username-error' : undefined }
                         />
                     </div>
                     {/* Email */}
@@ -123,6 +144,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('email') }
                             autoComplete='email'
                             placeholder='Enter your email'
+                            aria-invalid={ !!emailError }
+                            aria-describedby={ emailError ? 'auth-signup-email-error' : undefined }
                         />
                     </div>
                     {/* Password */}
@@ -138,10 +161,13 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             autoComplete='new-password'
                             placeholder='Enter your password'
                             aria-label='Password'
+                            aria-invalid={ !!passwordError }
+                            aria-describedby={ passwordError ? 'auth-signup-password-error' : undefined }
                         />
                         <Button
                             className='form-right p-1 focus-visible:ring-accent'
                             variant='ghost'
+                            type='button'
                             onClick={ () => setShowPassword((s) => !s) }
                             aria-pressed={ showPassword }
                             icon={ showPassword ? <Eye className='w-5 h-5 text-accent' /> : <EyeOff className='w-5 h-5 text-accent' /> }
@@ -159,6 +185,8 @@ const SignupForm: React.FC<SharedAuthCardProps> = ({
                             onBlur={ () => onFieldBlur?.('confirmPassword') }
                             placeholder='Confirm your password'
                             aria-label='Confirm Password'
+                            aria-invalid={ !!confirmPasswordError }
+                            aria-describedby={ confirmPasswordError ? 'auth-signup-confirm-password-error' : undefined }
                         />
                     </div>
                 </div>

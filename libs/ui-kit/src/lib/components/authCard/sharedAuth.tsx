@@ -13,11 +13,11 @@ const styles = {
 // Shared Props
 interface SharedAuthCardProps {
     isLoading?: boolean;
-    errors?: Record<string, string | undefined>;
+    errors: Record<string, string | undefined>;
     values: Record<string, any>;
     step?: number;
     onFieldChange: (field: string, value: any) => void;
-    onFieldBlur?: (field: string) => void;
+    onFieldBlur: (field: string) => void;
     onSubmit: (e: React.FormEvent) => void;
     switchView: (view: AuthCardView) => void;
     onStepChange?: (step: number) => void;
@@ -31,4 +31,4 @@ const viewOrder: Record<AuthCardView, number> = {
 
 type AuthCardView = 'login' | 'signup' | 'forgotPassword';
 
-export { styles, SharedAuthCardProps, viewOrder, AuthCardView };
+export { styles, type SharedAuthCardProps, viewOrder, type AuthCardView };

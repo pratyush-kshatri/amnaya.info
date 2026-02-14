@@ -8,10 +8,14 @@ import { Button } from '../button/button';
 const ForgotPasswordForm: React.FC<SharedAuthCardProps> = ({
     isLoading,
     values,
+    errors,
     onFieldChange,
+    onFieldBlur,
     onSubmit,
     switchView
 }) => {
+    const error = errors?.emailOrUsername;
+
     return (
         <form
             className='flex flex-col gap-y-2'
@@ -29,8 +33,11 @@ const ForgotPasswordForm: React.FC<SharedAuthCardProps> = ({
                     name='emailOrUsername'
                     value={ values.emailOrUsername || '' }
                     onChange={ (e) => onFieldChange('emailOrUsername', e.target.value) }
+                    onBlur={ () => onFieldBlur?.('emailOrUsername') }
                     autoComplete='username email'
                     placeholder='Enter your Username/Email'
+                    aria-invalid={ !!error }
+                    aria-describedby={ error ? 'auth-forgot-username-or-email-error' : undefined }
                 />
             </div>
 

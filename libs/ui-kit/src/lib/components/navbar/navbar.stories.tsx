@@ -33,7 +33,9 @@ const MOCK_USER = {
 // Mock Auth
 const MOCK_AUTH = {
     credentials: { usernameOrEmail: '', password: '', rememberMe: false },
+    errors: {},
     onFieldChange: () => console.log('Auth field changed'),
+    onFieldBlur: () => console.log('Auth field blurred'),
     onSubmit: () => alert('Submit Triggered')
 };
 

@@ -19,5 +19,5 @@
       "@amnaya.info/ui-kit/server": ["libs/ui-kit/src/server.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp"]  
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import * as Dialog from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Flip } from "gsap/Flip";
@@ -9,6 +10,7 @@ import { SplitText } from "gsap/SplitText";
 import { Observer } from "gsap/Observer";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
 import { cva } from "class-variance-authority";
 import { CircleUserRound, LucideIcon } from "lucide-react";
 
@@ -18,13 +20,22 @@ import { useRafMediaQuery } from "../../utils/useRafMediaQuery";
 
 import { cn } from "../../utils/cn";
 
-import { AuthCard, AuthCardProps } from "../authCard/authCard";
+import type { AuthCardProps } from "../authCard/authCard";
 
 import { useTouch } from "../../utils/useTouch";
 
+const LazyAuthCard = dynamic(
+    () => import('../authCard/authCard').then((m) => m.AuthCard),
+    {
+        ssr: false,
+        loading: () => null,
+    }
+) as React.ComponentType<AuthCardProps>;
+
+
 // Tailwind
-const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu';
-const panelClasses = 'absolute z-50 flex flex-col gap-2 p-3 w-full bg-surface rounded-4xl border border-accent outline-none will-change[clip-path,transform] transform-gpu backface-hidden';
+const overlayClasses = 'fixed inset-0 z-30 backdrop-blur-md transform-gpu';
+const panelClasses = 'absolute z-39 flex flex-col gap-2 p-3 w-full bg-surface rounded-4xl border border-accent outline-none will-change[clip-path,transform] transform-gpu backface-hidden';
 
 const sidePanelItemClasses = cva(
     [
@@ -88,15 +99,31 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
         const [isAuthOpen, setIsAuthOpen] = useState(false);
 
         const tlRef = useRef<gsap.core.Timeline>(null);
+        const isTouch = useTouch();
 
         const pathname = usePathname();
         const { isMobile } = useRafMediaQuery();
 
-        // Width Animation
+        // Toggle
+        const handleClose = useCallback(() => {
+            if (tlRef.current) tlRef.current.timeScale(2).reverse().then(onClose);
+            else onClose();
+        }, [onClose]);
+
+        // Auth Toggle
+        const handleAuthOpen = () => {
+            setIsAuthOpen(true);
+            handleClose();
+        };
+
+        const visibleLinks = useMemo(() => navLinks.filter((group) => !group.protected || isAuthenticated), [navLinks, isAuthenticated]);
+
+        // Position + Animation + Mobile Swipe
         useGSAP(() => {
             const content = contentRef.current;
+            const panel = panelRef.current;
             const navbar = navbarRef.current;
-            if (!isOpen || !navbar || !content) return;
+            if (!isOpen || !content || !panel || !navbar) return;
 
             const updatePosition = () => {
                 const navbarRect = navbar.getBoundingClientRect();
@@ -106,45 +133,20 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                     top: navbarRect.bottom + 12,
                     width: isMobile ? navbarRect.width : 320
                 };
-            }
+            };
 
             gsap.set(content, updatePosition());
-
-            const observer = new ResizeObserver(() => {
-                const state = Flip.getState(content);
-                gsap.set(content, updatePosition());
-
-                Flip.from(state, {
-                    duration: 0.3,
-                    ease: 'expo.out',
-                    simple: true
-                });
-            });
-
-            observer.observe(navbar);
-
-            return () => observer.disconnect();
-        }, { scope: contentRef, dependencies: [isOpen, isMobile, navbarRef] });
-
-        // Animation
-        useGSAP(() => {
-            const panel = panelRef.current;
-            if (!isOpen || !panel) return;
-
-            // Touch
             gsap.set(panel, {
                 transformOrigin: '50% 0%',
                 willChange: 'clip-path, transform, opacity',
                 touchAction: 'pan-y',
                 overscrollBehavior: 'contain'
-            })
+            });
 
             const items = panel.querySelectorAll('.side-panel-item');
             const titles = panel.querySelectorAll('.side-panel-title');
 
             const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-
-            // Open/Close Animation
             tl.fromTo(panel, {
                 y: -12,
                 clipPath: 'circle(0% at 50% 0%)',
@@ -171,10 +173,11 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
             items.forEach((item) => {
                 const icon = item.querySelector<HTMLElement>('.side-panel-icon');
                 const label = item.querySelector('.side-panel-label');
+                if (!label) return;
 
                 const split = new SplitText(label as HTMLElement, { type: 'chars' });
 
-                if (label) tl.from(split.chars, {
+                tl.from(split.chars, {
                     yPercent: 100,
                     autoAlpha: 0,
                     rotateX: -90,
@@ -192,7 +195,6 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 }, '<');
             });
 
-            // Title Animation
             tl.from(titles, {
                 x: -20,
                 autoAlpha: 0,
@@ -201,40 +203,39 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
             }, 0.2);
 
             tlRef.current = tl;
-        }, { scope: panelRef, dependencies: [isOpen] });
 
-        // Toggle
-        const handleClose = () => {
-            if (tlRef.current) tlRef.current.timeScale(2).reverse().then(onClose);
-            else onClose();
-        };
+            const resizeObserver = new ResizeObserver(() => {
+                const state = Flip.getState(content);
+                gsap.set(content, updatePosition());
 
-        // Auth Toggle
-        const handleAuthOpen = () => {
-            setIsAuthOpen(true);
-            handleClose();
-        };
-
-        const visibleLinks = useMemo(() => navLinks.filter((group) => !group.protected || isAuthenticated), [navLinks, isAuthenticated]);
-
-        // Mobile - Swipe
-        useGSAP(() => {
-            if (!useTouch || !panelRef.current || !isOpen) return;
-
-            const swipeObserver = Observer.create({
-                target: panelRef.current,
-                type: 'touch,pointer',
-                capture: true,
-                lockAxis: true,
-                onUp: (self) => {
-                    if (isOpen && self.deltaY < -10) handleClose();
-                },
-                dragMinimum: 10,
-                preventDefault: true
+                Flip.from(state, {
+                    duration: 0.3,
+                    ease: 'expo.out',
+                    simple: true
+                });
             });
+            resizeObserver.observe(navbar);
 
-            return () => swipeObserver.kill();
-        }, [isOpen]);
+            const swipeObserver = isTouch
+                ? Observer.create({
+                    target: panel,
+                    type: 'touch,pointer',
+                    capture: true,
+                    lockAxis: true,
+                    onUp: (self) => {
+                        if (isOpen && self.deltaY < -10) handleClose();
+                    },
+                    dragMinimum: 10,
+                    preventDefault: true
+                })
+                : null;
+
+            return () => {
+                resizeObserver.disconnect();
+                swipeObserver?.kill();
+                tl.kill();
+            };
+        }, { dependencies: [isOpen, isMobile, isTouch, navbarRef, handleClose] });
 
         return (
             <React.Fragment>
@@ -253,13 +254,17 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                                     ref={ contentRef }
                                     className='fixed z-50 outline-none'
                                 >
+                                    <VisuallyHidden.Root>
+                                        <Dialog.Title>Navigation Menu</Dialog.Title>
+                                        <Dialog.Description>Access navigation links and account settings</Dialog.Description>
+                                    </VisuallyHidden.Root>
                                     <aside
                                         ref={ panelRef }
                                         className={ panelClasses }
                                     >
                                         {/* Navigation */}
                                         { visibleLinks.map((group, index) => (
-                                            <React.Fragment>
+                                            <React.Fragment key={ group.title || index }>
                                                 <SidePanelGroup title={ group.title }>
                                                     { group.items.map((item) => (
                                                         <SidePanelItem
@@ -292,11 +297,13 @@ const SidePanel = React.forwardRef<HTMLDivElement, SidePanelProps>(
                 </Dialog.Root>
 
                 {/* Auth Card */}
-                <AuthCard
-                open={ isAuthOpen }
-                onOpenChange={ setIsAuthOpen }
-                    { ...authProps }
-                />
+                { isAuthOpen && (
+                    <LazyAuthCard
+                        open={ isAuthOpen }
+                        onOpenChange={ setIsAuthOpen }
+                        { ...authProps }
+                    />
+                ) }
 
             </React.Fragment>
         );
@@ -409,4 +416,4 @@ const Seperator = () => (
 
 SidePanel.displayName = 'SidePanel';
 
-export { SidePanel, SidePanelProps, SidePanelItemInterface, SidePanelGroupInterface };
+export { SidePanel, type SidePanelProps, type SidePanelItemInterface, type SidePanelGroupInterface };

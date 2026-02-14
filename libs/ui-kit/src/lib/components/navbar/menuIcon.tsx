@@ -115,7 +115,7 @@ const MenuIcon = React.forwardRef<SVGSVGElement, MenuIconProps>(
 
 MenuIcon.displayName = 'MenuIcon'
 
-export { MenuIcon, MenuIconProps };
+export { MenuIcon, type MenuIconProps };
 
 // Lucide React Icons
 // Menu

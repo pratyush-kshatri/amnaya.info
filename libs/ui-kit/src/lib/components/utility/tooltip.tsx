@@ -7,8 +7,10 @@ import { createPortal } from "react-dom";
 
 import { cn } from "../../utils/cn";
 
+import { useHydration } from "../../utils/useHydration";
+
 // Tailwind
-const tooltipClasses = 'fixed top-0 left-0 z-[51] pointer-events-none flex items-center px-2 py-1 rounded-full bg-foreground text-surface text-xs font-medium';
+const tooltipClasses = 'fixed top-0 left-0 z-50 pointer-events-none flex items-center px-2 py-1 rounded-full bg-foreground text-surface text-xs font-medium';
 
 interface TooltipRef {
     show: () => void;
@@ -30,8 +32,11 @@ const Tooltip = React.forwardRef<TooltipRef, TooltipProps> (
         const xTo = useRef<gsap.QuickToFunc | null>(null);
         const yTo = useRef<gsap.QuickToFunc | null>(null);
         const delayRef = useRef<gsap.core.Tween | null>(null);
+        const hydrated = useHydration();
 
         useGSAP(() => {
+            if (!hydrated) return;
+
             const tooltip = tooltipRef.current;
             if (!tooltip) return;
 
@@ -51,7 +56,7 @@ const Tooltip = React.forwardRef<TooltipRef, TooltipProps> (
                 duration: 0.15,
                 ease: 'expo.out'
             })
-        }, { scope: tooltipRef });
+        }, { scope: tooltipRef, dependencies: [hydrated] });
 
         useImperativeHandle(ref, () => ({
             show: () => {
@@ -80,6 +85,8 @@ const Tooltip = React.forwardRef<TooltipRef, TooltipProps> (
             }
         }));
 
+        if (!hydrated) return null;
+
         return typeof document !== 'undefined' ? createPortal(
             <div
                 ref={ tooltipRef }
@@ -94,4 +101,4 @@ const Tooltip = React.forwardRef<TooltipRef, TooltipProps> (
 
 Tooltip.displayName = 'Tooltip';
 
-export { Tooltip, TooltipRef };
+export { Tooltip, type TooltipRef };

@@ -20,20 +20,23 @@ import { ForgotPasswordForm } from './forgotPasswordForm';
 
 import { AuthCardView, styles, viewOrder } from './sharedAuth';
 
+import { useHydration } from '../../utils/useHydration';
+
 // Tailwind
-const overlayClasses = 'fixed inset-0 z-40 backdrop-blur-md transform-gpu pointer-events-auto';
-const contentClasses = 'fixed left-1/2 top-1/2 z-50 flex flex-col w-full rounded-4xl border border-accent bg-surface p-4 overflow-hidden outline-none will-change-[width,height,transform]';
+const overlayClasses = 'fixed inset-0 z-30 backdrop-blur-md transform-gpu pointer-events-auto';
+const contentClasses = 'fixed left-1/2 top-1/2 z-41 flex w-[min(95vw,500px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-4xl border border-accent bg-surface p-4 overflow-hidden outline-none will-change-[width,height,transform] transform-gpu';
 
 interface AuthCardProps {
     open?: boolean;
     credentials: Record<string, any>;
-    errors?: Record<string, string | undefined>;
+    errors: Record<string, string | undefined>;
     isLoading?: boolean;
     onOpenChange?: (open: boolean) => void;
     onFieldChange: (field: string, value: any) => void;
-    onFieldBlur?: (field: string) => void;
+    onFieldBlur: (field: string) => void;
     onSubmit: (view: AuthCardView, e: React.FormEvent) => void;
     onOAuth?: (provider: 'google' | 'github') => void;
+    onViewChange?: (view: AuthCardView) => void;
     trigger?: ReactNode;
 }
 
@@ -48,6 +51,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
         onFieldBlur,
         onSubmit,
         onOAuth,
+        onViewChange,
         trigger
     }, ref) => {
         const [internalOpen, setInternalOpen] = useState(false);
@@ -68,14 +72,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
 
         const { isMobile } = useRafMediaQuery();
 
-        // Centering
-        useGSAP(() => {
-            if (contentRef.current) gsap.set(contentRef.current, {
-                xPercent: -50,
-                yPercent: -50,
-                width: isMobile ? '95vw' : 500
-            });
-        }, [isOpen, isMobile]);
+        const hydrated = useHydration();
 
         // Content Transition
         const transition = useCallback((target: AuthCardView | number) => {
@@ -106,16 +103,17 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                     if (isViewChange) {
                         setView(target as AuthCardView);
                         setSignupStep(1);
+                        onViewChange?.(target as AuthCardView);
                     } else setSignupStep(target as number);
                 }
             });
-        }, [view, signupStep]);
+        }, [view, signupStep, onViewChange]);
 
         // Animations
         useGSAP(() => {
             const content = contentRef.current;
             const form = formRef.current;
-            if (!isOpen || !content || !form) return;
+            if (!hydrated || !isOpen || !content || !form) return;
 
             if (tlRef.current) tlRef.current.kill();
 
@@ -139,7 +137,6 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 targets: content,
                 duration: 0.3,
                 ease: 'power4.inOut',
-                // props: 'xPercent,yPercent',
                 absolute: false,
                 onComplete: () => { flipState.current = null }
             }));
@@ -204,7 +201,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
             }, '>');
 
             tlRef.current = tl;
-        }, { scope: contentRef, dependencies: [isOpen, view, signupStep] });
+        }, { scope: contentRef, dependencies: [hydrated, isOpen, view, signupStep] });
 
         // Close Animation
         const closeDialog = useCallback(() => {
@@ -223,8 +220,9 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                 setSignupStep(1);
                 directionRef.current = 1;
                 flipState.current = null;
+                onViewChange?.('login');
             });
-        }, [setIsOpen]);
+        }, [setIsOpen, onViewChange]);
 
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
@@ -236,6 +234,8 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
             signup: 'Join Amnaya',
             forgotPassword: 'Reset Password'
         };
+
+        if (!hydrated) return null;
 
         return (
             <Dialog.Root
@@ -306,6 +306,7 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                     { view === 'signup' && (
                                         <SignupForm
                                             values={ credentials }
+                                            errors={ errors }
                                             isLoading={ isLoading }
                                             onFieldChange={ onFieldChange }
                                             onFieldBlur={ onFieldBlur }
@@ -318,8 +319,10 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
                                     { view === 'forgotPassword' && (
                                         <ForgotPasswordForm
                                             values={ credentials }
+                                            errors={ errors }
                                             isLoading={ isLoading }
                                             onFieldChange={ onFieldChange }
+                                            onFieldBlur={ onFieldBlur }
                                             onSubmit={ handleSubmit }
                                             switchView={ transition }
                                         />
@@ -336,4 +339,4 @@ const AuthCard = React.forwardRef<HTMLDivElement, AuthCardProps> (
 
 AuthCard.displayName = 'AuthCard';
 
-export { AuthCard, AuthCardProps, styles };
+export { AuthCard, type AuthCardProps, styles };

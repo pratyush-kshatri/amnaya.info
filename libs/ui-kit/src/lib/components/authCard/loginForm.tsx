@@ -12,6 +12,7 @@ interface LoginFormProps extends SharedAuthCardProps {
 const LoginForm: React.FC<LoginFormProps> = ({
     isLoading,
     values,
+    errors,
     onFieldChange,
     onFieldBlur,
     onSubmit,
@@ -19,6 +20,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
     onOAuth
 }) => {
     const [showPassword, setShowPassword] = useState(false);
+
+    const emailError = errors?.emailOrUsername;
+    const passwordError = errors?.password;
 
     return (
         <React.Fragment>
@@ -40,6 +44,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         autoComplete='username email'
                         placeholder='Enter your Username/Email'
                         aria-label='Email or Username'
+                        aria-invalid={ !!emailError }
+                        aria-describedby={ emailError ? 'auth-login-email-or-username-error' : undefined }
                     />
                 </div>
 
@@ -56,10 +62,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         autoComplete='current-password'
                         placeholder='Enter your password'
                         aria-label='Password'
+                        aria-invalid={ !!passwordError }
+                        aria-describedby={ passwordError ? 'auth-login-password-error' : undefined }
                     />
                     <Button
                         className='form-right p-1 focus-visible:ring-accent'
                         variant='ghost'
+                        type='button'
                         onClick={ () => setShowPassword((s) => !s) }
                         aria-pressed={ showPassword }
                         icon={ showPassword ? <Eye className='w-5 h-5 text-accent' /> : <EyeOff className='w-5 h-5 text-accent' /> }
@@ -136,4 +145,4 @@ const LoginForm: React.FC<LoginFormProps> = ({
     );
 }
 
-export { LoginForm, LoginFormProps };
+export { LoginForm, type LoginFormProps };

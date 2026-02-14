@@ -1,6 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap");
+
 @import 'tailwindcss';
 
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap");
+@source "../components/**/*.{ts,tsx,js,jsx}";
+@source "../utils/**/*.{ts,tsx,js,jsx}";
 
 @theme {
     --color-primary: var(--primary);
